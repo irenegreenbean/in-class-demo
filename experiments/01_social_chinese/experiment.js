@@ -68,21 +68,21 @@ const trials = {
             },
             data: jsPsych.timelineVariable('data')
         },
-        {
-            [
-              {
-                type: 'likert-table',
-                prompt: ' ',
-                statements: [
-                  {prompt: 'I like to eat vegetables', name: 'VeggiesTable'},
-                  {prompt: 'I like to eat fruit', name: 'FruitTable'},
-                  {prompt: 'I like to eat meat', name: 'MeatTable'},
-                ],
-                options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
-              }
-            ]
+        // {
+        //     [
+        //       {
+        //         type: 'likert-table',
+        //         prompt: ' ',
+        //         statements: [
+        //           {prompt: 'I like to eat vegetables', name: 'VeggiesTable'},
+        //           {prompt: 'I like to eat fruit', name: 'FruitTable'},
+        //           {prompt: 'I like to eat meat', name: 'MeatTable'},
+        //         ],
+        //         options: ['Strongly Disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly Agree'],
+        //       }
+        //     ]
 
-        },
+        // },
         {
             type: jsPsychSurveyLikert,
             preamble: `<audio controls src="${jsPsych.timelineVariable('stimulus')}"></audio>`,
