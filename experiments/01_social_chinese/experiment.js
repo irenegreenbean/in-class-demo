@@ -1,6 +1,6 @@
 const jsPsych = initJsPsych({
     show_progress_bar: true,
-    auto_update_progess_bar: false,
+    auto_update_progress_bar: false,
     message_progress_bar: "percentage complete",
     on_finish: function (data) {
         jsPsych.data.displayData('csv');
@@ -12,13 +12,35 @@ let timeline = [];
 
 const irb = {
     type: jsPsychHtmlButtonResponse,
-    stimulus: '<p><font size="3">We invite you to participate in a research study on language production and comprehension. Your experimenter will ask you to do a linguistic task such as reading sentences or words, naming pictures or describing scenes, making up sentences of your own, or participating in a simple language game. <br><br>There are no risks or benefits of any kind involved in this study. <br><br>You will be paid for your participation at the posted rate.<br><br>If you have read this form and have decided to participate in this experiment, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at anytime without penalty or loss of benefits to which you are otherwise entitled. You have the right to refuse to do particular tasks. Your individual privacy will be maintained in all published and written data resulting from the study. You may print this form for your records.<br><br>CONTACT INFORMATION: If you have any questions, concerns or complaints about this research study, its procedures, risks and benefits, you should contact the Protocol Director Meghan Sumner at (650)-725-9336. If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906. You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306 USA.<br><br>If you agree to participate, please proceed to the study tasks.</font></p>',
+    stimulus: `
+    <p style="width: 1000px; margin-bottom: -250px">
+    We invite you to participate in a research study on language production and comprehension.
+    <BR><BR>Your experimenter will ask you to do a linguistic task such as reading sentences or words, naming pictures or describing scenes, making up sentences of your own, or participating in a simple language game.
+    <BR><BR>There are no risks or benefits of any kind involved in this study.
+    <BR><BR>You will be paid for your participation at the posted rate.
+    <BR><BR>
+    If you agree to participate, please proceed to the study tasks.
+    </p>
+    <p style="width: 1000px; font-size: 9pt; position: relative; top: 330px; padding-bottom: 30px; text-align: justify">
+    If you have read this form and have decided to participate in this experiment, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at anytime without penalty or loss of benefits to which you are otherwise entitled. You have the right to refuse to do particular tasks. Your individual privacy will be maintained in all published and written data resulting from the study. You may print this form for your records.
+    <BR><BR>CONTACT INFORMATION: If you have any questions, concerns or complaints about this research study, its procedures, risks and benefits, you should contact the Protocol Director Meghan Sumner at (650)-725-9336. If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906. You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306 USA.
+    </p>`,
     choices: ['Continue'],
     on_start: function() {
         jsPsych.setProgressBar(0)
     }
 };
 timeline.push(irb);
+
+// const irb = {
+//     type: jsPsychHtmlButtonResponse,
+//     stimulus: '<p><font size="3">We invite you to participate in a research study on language production and comprehension. Your experimenter will ask you to do a linguistic task such as reading sentences or words, naming pictures or describing scenes, making up sentences of your own, or participating in a simple language game. <br><br>There are no risks or benefits of any kind involved in this study. <br><br>You will be paid for your participation at the posted rate.<br><br>If you have read this form and have decided to participate in this experiment, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at anytime without penalty or loss of benefits to which you are otherwise entitled. You have the right to refuse to do particular tasks. Your individual privacy will be maintained in all published and written data resulting from the study. You may print this form for your records.<br><br>CONTACT INFORMATION: If you have any questions, concerns or complaints about this research study, its procedures, risks and benefits, you should contact the Protocol Director Meghan Sumner at (650)-725-9336. If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906. You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306 USA.<br><br>If you agree to participate, please proceed to the study tasks.</font></p>',
+//     choices: ['Continue'],
+//     on_start: function() {
+//         jsPsych.setProgressBar(0)
+//     }
+// };
+// timeline.push(irb);
 
 // const intro_slide = {
 //     type: jsPsychHtmlKeyboardResponse,
@@ -164,8 +186,11 @@ const trials = {
               <p>Rate how much you agree or disagree with the following statements:</p>`
             },
           questions: [
-            {prompt: 'Where do you think this person is from?'}
-          ]
+            {
+            prompt: 'Where do you think this person is from?',
+            required: true
+            }
+          ],
           // data: jsPsych.timelineVariable('place'),
           // required: true,
           // how to collect data? also why won't this let me make it required??
