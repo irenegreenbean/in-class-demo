@@ -32,22 +32,22 @@ let trial_objects = [
         "stimulus": "stimuli/amanda_1.wav",
         "clip": "amanda_1"
     },
-    {
-        "stimulus": "stimuli/amanda_2.wav",
-        "clip": "amanda_2"
-    },
-    {
-        "stimulus": "stimuli/amanda_3.wav",
-        "clip": "amanda_3"
-    },
-    {
-        "stimulus": "stimuli/amanda_4.wav",
-        "clip": "amanda_4"
-    },
-    {
-        "stimulus": "stimuli/amanda_5.wav",
-        "clip": "amanda_5"
-    },
+    // {
+    //     "stimulus": "stimuli/amanda_2.wav",
+    //     "clip": "amanda_2"
+    // },
+    // {
+    //     "stimulus": "stimuli/amanda_3.wav",
+    //     "clip": "amanda_3"
+    // },
+    // {
+    //     "stimulus": "stimuli/amanda_4.wav",
+    //     "clip": "amanda_4"
+    // },
+    // {
+    //     "stimulus": "stimuli/amanda_5.wav",
+    //     "clip": "amanda_5"
+    // },
 
 
 
