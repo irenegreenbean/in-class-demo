@@ -29,25 +29,198 @@ let trial_objects = [
     // },
 
     {
-        "stimulus": "stimuli/amanda_1.wav",
-        "clip": "amanda_1"
+        "stimulus": "stimuli/beijing_clip1.wav",
+        "clip": "beijing_clip1"
     },
-    // {
-    //     "stimulus": "stimuli/amanda_2.wav",
-    //     "clip": "amanda_2"
-    // },
-    // {
-    //     "stimulus": "stimuli/amanda_3.wav",
-    //     "clip": "amanda_3"
-    // },
-    // {
-    //     "stimulus": "stimuli/amanda_4.wav",
-    //     "clip": "amanda_4"
-    // },
-    // {
-    //     "stimulus": "stimuli/amanda_5.wav",
-    //     "clip": "amanda_5"
-    // },
+    {
+        "stimulus": "stimuli/beijing_clip2.wav",
+        "clip": "beijing_clip2"
+    },
+    {
+        "stimulus": "stimuli/beijing_clip3.wav",
+        "clip": "beijing_clip3"
+    },
+    {
+        "stimulus": "stimuli/beijing_clip5.wav",
+        "clip": "beijing_clip4"
+    },
+    {
+        "stimulus": "stimuli/beijing_clip7.wav",
+        "clip": "beijing_clip5"
+    },
+
+    //
+
+        {
+        "stimulus": "stimuli/dongbei_clip1.wav",
+        "clip": "dongbei_clip1"
+    },
+    {
+        "stimulus": "stimuli/dongbei_clip2.wav",
+        "clip": "dongbei_clip2"
+    },
+    {
+        "stimulus": "stimuli/dongbei_clip3.wav",
+        "clip": "dongbei_clip3"
+    },
+    {
+        "stimulus": "stimuli/dongbei_clip5.wav",
+        "clip": "dongbei_clip5"
+    },
+    {
+        "stimulus": "stimuli/dongbei_clip7.wav",
+        "clip": "dongbei_clip7"
+    },
+
+    //
+
+        {
+        "stimulus": "stimuli/guangdong_clip1.wav",
+        "clip": "guangdong_clip1"
+    },
+    {
+        "stimulus": "stimuli/guangdong_clip2.wav",
+        "clip": "guangdong_clip2"
+    },
+    {
+        "stimulus": "stimuli/guangdong_clip3.wav",
+        "clip": "guangdong_clip3"
+    },
+    {
+        "stimulus": "stimuli/guangdong_clip5.wav",
+        "clip": "guangdong_clip5"
+    },
+    {
+        "stimulus": "stimuli/guangdong_clip7.wav",
+        "clip": "guangdong_clip7"
+    },
+
+    //
+
+        {
+        "stimulus": "stimuli/sichuan_clip1.wav",
+        "clip": "sichuan_clip1"
+    },
+    {
+        "stimulus": "stimuli/sichuan_clip2.wav",
+        "clip": "sichuan_clip2"
+    },
+    {
+        "stimulus": "stimuli/sichuan_clip3.wav",
+        "clip": "sichuan_clip3"
+    },
+    {
+        "stimulus": "stimuli/sichuan_clip5.wav",
+        "clip": "sichuan_clip5"
+    },
+    {
+        "stimulus": "stimuli/sichuan_clip7.wav",
+        "clip": "sichuan_clip7"
+    },
+
+    //
+        {
+        "stimulus": "stimuli/singapore_clip1.wav",
+        "clip": "singapore_clip1"
+    },
+    {
+        "stimulus": "stimuli/singapore_clip2.wav",
+        "clip": "singapore_clip2"
+    },
+    {
+        "stimulus": "stimuli/singapore_clip3.wav",
+        "clip": "singapore_clip3"
+    },
+    {
+        "stimulus": "stimuli/singapore_clip5.wav",
+        "clip": "singapore_clip5"
+    },
+    {
+        "stimulus": "stimuli/singapore_clip7.wav",
+        "clip": "singapore_clip7"
+    },
+
+    //
+
+        {
+        "stimulus": "stimuli/standard_clip1.wav",
+        "clip": "standard_clip1"
+    },
+    {
+        "stimulus": "stimuli/standard_clip2.wav",
+        "clip": "standard_clip2"
+    },
+    {
+        "stimulus": "stimuli/standard_clip3.wav",
+        "clip": "standard_clip3"
+    },
+    {
+        "stimulus": "stimuli/standard_clip5.wav",
+        "clip": "standard_clip5"
+    },
+    {
+        "stimulus": "stimuli/standard_clip7.wav",
+        "clip": "standard_clip7"
+    },
+
+    //
+
+        {
+        "stimulus": "stimuli/taiwan_clip1.wav",
+        "clip": "taiwan_clip1"
+    },
+    {
+        "stimulus": "stimuli/taiwan_clip2.wav",
+        "clip": "taiwan_clip2"
+    },
+    {
+        "stimulus": "stimuli/taiwan_clip3.wav",
+        "clip": "taiwan_clip3"
+    },
+    {
+        "stimulus": "stimuli/taiwan_clip5.wav",
+        "clip": "taiwan_clip5"
+    },
+    {
+        "stimulus": "stimuli/taiwan_clip7.wav",
+        "clip": "taiwan_clip7"
+    },
+
+    //
+        {
+        "stimulus": "stimuli/tianjin_clip1.wav",
+        "clip": "tianjin_clip1"
+    },
+    {
+        "stimulus": "stimuli/tianjin_clip2.wav",
+        "clip": "tianjin_clip2"
+    },
+    {
+        "stimulus": "stimuli/tianjin_clip3.wav",
+        "clip": "tianjin_clip3"
+    },
+    {
+        "stimulus": "stimuli/tianjin_clip5.wav",
+        "clip": "tianjin_clip5"
+    },
+    {
+        "stimulus": "stimuli/tianjin_clip7.wav",
+        "clip": "tianjin_clip7"
+    },
+
+    //    
+    {
+        "stimulus": "stimuli/attention_check_agree.wav",
+        "clip": "attention_check_agree"
+    },
+    {
+        "stimulus": "stimuli/attention_check_disagree.wav",
+        "clip": "attention_check_disagree"
+    },
+    {
+        "stimulus": "stimuli/attention_check_neutral.wav",
+        "clip": "attention_check_neutral"
+    },
 
 
 

@@ -1,9 +1,9 @@
 const jsPsych = initJsPsych({
     show_progress_bar: true,
     auto_update_progress_bar: false,
-    message_progress_bar: "percentage complete",
+    message_progress_bar: "实验完成程度线",
     on_finish: function (data) {
-        jsPsych.data.displayData('csv');
+        // jsPsych.data.displayData('csv');
         proliferate.submit({"trials": data.values()});
       }
   });
@@ -224,13 +224,14 @@ const trials = {
             },
             data: jsPsych.timelineVariable('data'),
             on_finish: function(data) {
-                console.log(data.trial_index)
-                console.log(data.trial_index/78)
-                console.log(jsPsych.getProgressBarCompleted())
-                jsPsych.setProgressBar(data.trial_index/78);
-                console.log(jsPsych.getProgressBarCompleted())
+                // console.log(data.trial_index)
+                // console.log(data.trial_index/78)
+                // console.log(jsPsych.getProgressBarCompleted())
+                jsPsych.setProgressBar(data.trial_index/135);
+                // console.log(jsPsych.getProgressBarCompleted())
 
-            }
+            },
+            button_label: '继续',
         },
         {
           type: jsPsychSurveyText,
@@ -327,6 +328,9 @@ const survey1 = {
       // }
     ]
   ],
+  on_finish: function(data) {
+      jsPsych.setProgressBar(data.trial_index/135);
+    },
   button_label_finish: '继续',
 };
 timeline.push(survey1);
@@ -373,6 +377,9 @@ const survey_family = {
 
     ]
   ],
+    on_finish: function(data) {
+      jsPsych.setProgressBar(data.trial_index/135);
+    },
   button_label_finish: '继续',
 };
 timeline.push(survey_family);
@@ -391,7 +398,8 @@ const survey2a = {
   <input name="lang3" type="text" placeholder="语言 3"><BR><BR>
   <input name="lang4" type="text" placeholder="语言 4"><BR><BR>
   <input name="lang5" type="text" placeholder="语言 5">
-  </p>`
+  </p>`,
+  button_label: '继续',
 };
 timeline.push(survey2a);
 
@@ -488,6 +496,9 @@ const survey2b = {
       },
     ],
   ],
+    on_finish: function(data) {
+      jsPsych.setProgressBar(data.trial_index/135);
+    },
   button_label_finish: '继续',
 };
 timeline.push(survey2b);
@@ -506,6 +517,9 @@ const payment = {
     }
     // button_label: '继续',
   ],
+    on_finish: function(data) {
+      jsPsych.setProgressBar(data.trial_index/135);
+    },
   button_label: '继续',
 };
 timeline.push(payment);
