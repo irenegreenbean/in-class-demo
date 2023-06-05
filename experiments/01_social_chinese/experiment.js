@@ -227,7 +227,7 @@ const trials = {
                 // console.log(data.trial_index)
                 // console.log(data.trial_index/78)
                 // console.log(jsPsych.getProgressBarCompleted())
-                jsPsych.setProgressBar(data.trial_index/135);
+                jsPsych.setProgressBar(data.trial_index/140);
                 // console.log(jsPsych.getProgressBarCompleted())
 
             },
@@ -329,7 +329,7 @@ const survey1 = {
     ]
   ],
   on_finish: function(data) {
-      jsPsych.setProgressBar(data.trial_index/135);
+      jsPsych.setProgressBar(data.trial_index/140);
     },
   button_label_finish: '继续',
 };
@@ -378,7 +378,7 @@ const survey_family = {
     ]
   ],
     on_finish: function(data) {
-      jsPsych.setProgressBar(data.trial_index/135);
+      jsPsych.setProgressBar(data.trial_index/140);
     },
   button_label_finish: '继续',
 };
@@ -497,7 +497,7 @@ const survey2b = {
     ],
   ],
     on_finish: function(data) {
-      jsPsych.setProgressBar(data.trial_index/135);
+      jsPsych.setProgressBar(data.trial_index/140);
     },
   button_label_finish: '继续',
 };
@@ -518,7 +518,7 @@ const payment = {
     // button_label: '继续',
   ],
     on_finish: function(data) {
-      jsPsych.setProgressBar(data.trial_index/135);
+      jsPsych.setProgressBar(data.trial_index/140);
     },
   button_label: '继续',
 };
