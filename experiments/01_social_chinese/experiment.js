@@ -15,7 +15,8 @@ const stopCollection = {
     stimulus: '<p>This study is currently not accepting new participants. Please check back again tomorrow.</p>',
     choices: "NO_KEYS",
 }
-timeline.push(stopCollection);
+
+timeline.push(stopCollection); 
 
 // const irb = {
 //     type: jsPsychHtmlButtonResponse,
