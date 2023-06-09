@@ -16,7 +16,7 @@ const stopCollection = {
     choices: "NO_KEYS",
 }
 
-// timeline.push(stopCollection); 
+timeline.push(stopCollection); 
 
 // const irb = {
 //     type: jsPsychHtmlButtonResponse,
