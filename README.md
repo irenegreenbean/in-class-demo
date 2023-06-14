@@ -7,4 +7,6 @@ In this study, a social attribute rating task was carried out in the form of a w
 
 The OSF preregistration for this study can be found here: https://osf.io/vtn82. 
 
+Within each folder (experiments, analysis, data), you will find a folder for 01_social_chinese. The 01_social_chinese folders contain the corresponding experiment, analysis, and data files.
+
 
