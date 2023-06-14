@@ -1,0 +1,109 @@
+ ## CUMULATIVE LINK -- EDUCATED ##
+
+ Family: cumulative 
+  Links: mu = logit; disc = identity 
+Formula: educated ~ accent + (1 | id) + (1 | clip) 
+   Data: d (Number of observations: 799) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Group-Level Effects: 
+~clip (Number of levels: 17) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.17      0.12     0.01     0.43 1.00     1195     1526
+
+~id (Number of levels: 47) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.71      0.21     1.34     2.17 1.00      940     1366
+
+Population-Level Effects: 
+                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept[1]       -7.03      0.67    -8.43    -5.83 1.00     1799     2057
+Intercept[2]       -5.62      0.45    -6.52    -4.79 1.00     1425     2240
+Intercept[3]       -4.26      0.36    -4.97    -3.55 1.00     1022     1596
+Intercept[4]       -0.39      0.30    -0.98     0.20 1.00      809     1260
+Intercept[5]        2.25      0.32     1.61     2.88 1.00      952     1675
+Intercept[6]        6.20      0.53     5.25     7.30 1.00     2116     2788
+accentsingapore    -0.88      0.24    -1.35    -0.40 1.00     3122     2573
+accentstandard      0.25      0.24    -0.22     0.73 1.00     3109     2687
+accenttaiwan       -0.67      0.24    -1.14    -0.18 1.00     3001     2308
+
+Family Specific Parameters: 
+     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+disc     1.00      0.00     1.00     1.00   NA       NA       NA
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+## ADJACENT CATEGORY -- EDUCATED ##
+
+ Family: acat 
+  Links: mu = logit; disc = identity 
+Formula: educated ~ accent + (1 | id) + (1 | clip) 
+   Data: d (Number of observations: 799) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Group-Level Effects: 
+~clip (Number of levels: 17) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.13      0.09     0.00     0.33 1.00     1147     1590
+
+~id (Number of levels: 47) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     1.14      0.15     0.87     1.49 1.00      711     1288
+
+Population-Level Effects: 
+                Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept[1]       -2.71      0.73    -4.19    -1.35 1.00     3080     2969
+Intercept[2]       -2.73      0.48    -3.73    -1.81 1.00     1633     2451
+Intercept[3]       -3.55      0.31    -4.18    -2.99 1.01      957     1741
+Intercept[4]       -0.11      0.23    -0.58     0.32 1.01      596     1076
+Intercept[5]        1.36      0.25     0.88     1.84 1.00      708     1453
+Intercept[6]        4.48      0.52     3.50     5.52 1.00     1900     2464
+accentsingapore    -0.62      0.19    -1.00    -0.27 1.00     1783     1698
+accentstandard      0.10      0.19    -0.28     0.47 1.00     2106     1636
+accenttaiwan       -0.41      0.18    -0.76    -0.06 1.00     1971     1653
+
+Family Specific Parameters: 
+     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+disc     1.00      0.00     1.00     1.00   NA       NA       NA
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).
+
+## LOOIC ##
+Output of model 'm.logit.educated':
+
+Computed from 4000 by 799 log-likelihood matrix
+
+         Estimate   SE
+elpd_loo   -801.5 31.4
+p_loo        56.5  3.5
+looic      1603.0 62.9
+------
+Monte Carlo SE of elpd_loo is 0.1.
+
+All Pareto k estimates are good (k < 0.5).
+See help('pareto-k-diagnostic') for details.
+
+Output of model 'm.acat.educated':
+
+Computed from 4000 by 799 log-likelihood matrix
+
+         Estimate   SE
+elpd_loo   -836.8 33.3
+p_loo        56.6  5.2
+looic      1673.7 66.7
+------
+Monte Carlo SE of elpd_loo is 0.2.
+
+All Pareto k estimates are good (k < 0.5).
+See help('pareto-k-diagnostic') for details.
+
+Model comparisons:
+                 elpd_diff se_diff
+m.logit.educated   0.0       0.0  
+m.acat.educated  -35.3       6.8 

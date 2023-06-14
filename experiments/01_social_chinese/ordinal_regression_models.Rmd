@@ -1,0 +1,384 @@
+---
+title: "ordinal_regression_models"
+author: "Irene Yi"
+date: '2023-06-11'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Mixed effects ordinal regression (the Bayesian way)
+# created by jdegen on May 31, 2023
+
+library(tidyverse)
+library(brms)
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+source("helpers.R")
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") 
+theme_set(theme_bw())
+
+data_root = c("/Users/ireneyi/Downloads/")
+
+d_old = read.csv(file.path(data_root, "FINAL_reformatted_data_chinese_accents_filtered_for_attention_checks.csv")) %>% 
+  mutate_if(is.character,as.factor)
+
+view(d_old)
+nrow(d_old) #1880 rows
+
+
+d = read.csv(file.path(data_root, "critical_accents.csv")) %>% 
+  mutate_if(is.character,as.factor)
+
+view(d)
+nrow(d) #799 rows
+
+contrasts(d$accent)
+
+
+table(d$accent)
+
+# recode ratings as factors
+d$trustworthy <- factor(d$trustworthy, ordered=TRUE)
+d$wealthy <- factor(d$wealthy, ordered=TRUE)
+d$confident <- factor(d$confident, ordered=TRUE)
+d$honest <- factor(d$honest, ordered=TRUE)
+d$kind <- factor(d$kind, ordered=TRUE)
+d$humorous <- factor(d$humorous, ordered=TRUE)
+d$educated <- factor(d$educated, ordered=TRUE)
+d$intelligent <- factor(d$intelligent, ordered=TRUE)
+
+
+# centering variables
+d = d %>% 
+  mutate(cAccent = as.numeric(accent) - mean(as.numeric(accent)))
+
+d
+```
+
+
+```{r}
+# cumulative link model
+# family = the type of link function, so specified as cumulative here
+m.logit.trustworthy = brm(trustworthy ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.trustworthy)
+
+library(xtable) 
+xtable(coef(summary(m.logit.trustworthy)))
+summary(m)
+
+coef(summary(m.logit.trustworthy))
+
+
+## bayes factors
+## Honest
+# full model
+
+# above
+
+# null model
+m.trustworthy.null = brm(trustworthy ~ (1|clip) + (1|id),
+               data=d,
+               family=cumulative(),
+               save_pars = save_pars(all = TRUE),
+               cores=4)
+summary(m.trustworthy.null)
+
+BF10 <- bayes_factor(m.logit.trustworthy, m.trustworthy.null)
+
+h <- hypothesis(m.logit.trustworthy, "accenttaiwan > 0")
+print(h, digits = 4)
+
+1 / h$hypothesis$Evid.Ratio
+
+h.null <- hypothesis(m.trustworthy.null, "Intercept[1] > 0")
+print(h.null, digits = 4)
+
+
+# what is the Bayes Factor and the probability of the Singlish score main effect being greater than 0?
+```
+
+
+```{r}
+# adjacent category model
+m.acat.trustworthy = brm(trustworthy ~ accent + (1|id) + (1|clip),
+              data=d,
+              family=acat(),
+              cores=4, save_all_pars = TRUE)
+summary(m.acat.trustworthy)
+# marginal_effects(m.acat)
+
+loo(m.logit.trustworthy,m.acat.trustworthy)
+
+# confident
+m.logit.confident = brm(confident ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.confident)
+
+h <- hypothesis(m.logit.confident, "accenttaiwan > 0")
+print(h, digits = 4)
+
+1 / h$hypothesis$Evid.Ratio
+
+
+# intelligent
+
+m.logit.intelligent = brm(intelligent ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, 
+        save_all_pars = TRUE)
+
+
+summary(m.logit.intelligent)
+
+h <- hypothesis(m.logit.intelligent, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+ 
+# educated
+
+m.logit.educated = brm(educated ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.educated)
+
+h <- hypothesis(m.logit.educated, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+m.acat.educated = brm(educated ~ accent + (1|id) + (1|clip),
+              data=d,
+              family=acat(),
+              cores=4, save_all_pars = TRUE)
+summary(m.acat.educated)
+
+loo(m.logit.educated,m.acat.educated)
+
+loo <- loo(m.logit.educated,m.acat.educated)
+print(loo)
+
+
+# wealthy
+m.logit.wealthy = brm(wealthy ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.wealthy)
+
+h <- hypothesis(m.logit.wealthy, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+# kind
+m.logit.kind = brm(kind ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.kind)
+
+h <- hypothesis(m.logit.kind, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+# honest
+m.logit.honest = brm(honest ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.honest)
+
+h <- hypothesis(m.logit.honest, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+# humorous
+m.logit.humorous = brm(humorous ~ accent + (1|id) + (1|clip),
+        data=d,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.humorous)
+
+h <- hypothesis(m.logit.humorous, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+```
+
+
+```{r}
+# status
+
+d_ss = read.csv(file.path(data_root, "status_vs_solidarity.csv")) %>% 
+  mutate_if(is.character,as.factor)
+
+view(d_ss)
+nrow(d_ss) #799 rows
+
+contrasts(d_ss$accent)
+
+
+table(d_ss$accent)
+
+# recode ratings as factors
+d_ss$status <- factor(d_ss$status, ordered=TRUE)
+d_ss$solidarity <- factor(d_ss$solidarity, ordered=TRUE)
+
+
+# centering variables
+d_ss = d_ss %>% 
+  mutate(cAccent = as.numeric(accent) - mean(as.numeric(accent)))
+
+d_ss
+
+# status 
+m.logit.status = brm(status ~ accent + (1|id) + (1|clip),
+        data=d_ss,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.status)
+
+m.status = brm(status ~ accent + (1|id) + (1|clip), data=d_ss, cores=4, save_all_pars = TRUE)
+summary(m.status)
+
+h <- hypothesis(m.status, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+library(languageR)
+library(lme4)
+
+# include by-participant random intercepts if you have more than one data point per participant (mixed effects)
+
+# Let's run our first mixed effects linear regression model! We start by running the simplest linear regression model for predicting RTs (only frequency predictor) with by-subjects random intercepts.
+m.status = lmer(status ~ accent + (1|id) + (1|clip), data=d_ss, REML=T)
+summary(m.status)
+
+
+# solidarity
+m.logit.solidarity = brm(solidarity ~ accent + (1|id) + (1|clip),
+        data=d_ss,
+        family=cumulative(),
+        cores=4, save_all_pars = TRUE)
+summary(m.logit.solidarity)
+
+m.solidarity = brm(solidarity ~ accent + (1|id) + (1|clip), data=d_ss, cores=4, save_all_pars = TRUE)
+summary(m.solidarity)
+
+h <- hypothesis(m.solidarity, "accenttaiwan > 0")
+print(h, digits = 4)
+1 / h$hypothesis$Evid.Ratio
+
+
+# In the context of model selection, an LOOIC difference greater than twice its corresponding standard error can be interpreted as suggesting that the model with the lower LOOIC value fits the data substantially better, at least when the number of observations is large enough
+loo(m.logit.trustworhy,m.acat.trustworthy)
+
+# loo "leave one out"
+
+# report intercepts, report coefficients of effects, and report credible interval
+
+# plot the counts on y axis with error bars
+# x axis is each of the likert values
+
+# Plot proportions of responses by partitive
+agr = d %>% 
+  select(Rating,Partitive,Subjecthood) %>% 
+  mutate(One = case_when(Rating == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(Rating == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(Rating == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(Rating == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(Rating == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(Rating == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(Rating == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+agr_part = agr %>% 
+  group_by(Partitive,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+ggplot(agr_part, aes(x=Rating,y=Mean,color=Partitive)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1))
+
+# Plot proportions of responses by subjecthood
+agr_subj = agr %>% 
+  group_by(Subjecthood,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+ggplot(agr_subj, aes(x=Rating,y=Mean,color=Subjecthood)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1))
+
+
+# Plot proportions of responses by partitive and subjecthood
+agr_partsubj = agr %>% 
+  group_by(Subjecthood,Partitive,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+ggplot(agr_partsubj, aes(x=Rating,y=Mean,color=Partitive)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  facet_wrap(~Subjecthood) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1))
+
+d_items = d %>% 
+  group_by(Item,Partitive) %>% 
+  summarize(Mean=mean(Rating))
+
+ggplot(d_items, aes(x=Mean,fill=Partitive)) +
+  geom_histogram(alpha=.5,position="identity") +
+  scale_fill_manual(values=cbPalette) +
+  scale_x_continuous(name="Mean by-item rating",breaks=seq(1,7,by=1))
+
+d_items = d %>% 
+  group_by(Item,Subjecthood) %>% 
+  summarize(Mean=mean(Rating))
+
+ggplot(d_items, aes(x=Mean,fill=Subjecthood)) +
+  geom_histogram(alpha=.5,position="identity") +
+  scale_fill_manual(values=cbPalette) +
+  scale_x_continuous(name="Mean by-item rating",breaks=seq(1,7,by=1))
+
+```
+

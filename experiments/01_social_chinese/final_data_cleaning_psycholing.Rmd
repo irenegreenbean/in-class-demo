@@ -1,0 +1,649 @@
+---
+title: "final_data_cleaning_psycholing"
+author: "Irene Yi"
+date: '2023-06-10'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+library(tidyverse)
+library(brms)
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+source("helpers.R")
+cbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7") 
+theme_set(theme_bw())
+
+
+
+data_root = c("/Users/ireneyi/Downloads/")
+
+data = read.csv(file.path(data_root, "social_attribute_rating_to_clean.csv"))
+
+data
+
+```
+
+```{r}
+### CLEANING THE DATA ###
+
+# load data
+art <- read.csv("/Users/ireneyi/Downloads/data_to_clean_june9.csv")
+
+# select relevant trials
+art <- art[art$trial_index > 5 & art$trial_index < 134,]
+
+art
+
+# select relevant columns
+art = art[c("workerid","clip","response","stimulus")]
+art <- subset(art, !is.na(response) & response != "")
+colnames(art)[1] = "id" # rename column
+
+# remove curly braces from "response" column
+art$response<-gsub("\\{","",art$response)
+art$response<-gsub("\\}","",art$response)
+
+# remove single quotes from "response" column
+art$response<-gsub("'","",art$response)
+
+art
+
+# create empty data frame
+art_new <- data.frame()
+
+art_new
+
+# loop through the initial data frame to split the responses up
+for (i in 1:nrow(art)) {
+  response_split <- strsplit(art$response[i], ",")
+  for (j in 1:length(response_split[[1]])) {
+    art_new <- rbind(art_new, 
+                      data.frame(id = art$id[i], 
+                                 clip = art$clip[i],
+                                 stimulus = art$stimulus[i],
+                                 response = response_split[[1]][j]))
+  }
+}
+
+# remove leading spaces in the "response" column
+art_new$response <- trimws(art_new$response)
+
+# split data in "response" column into two based on colon
+art_new <- separate(art_new, response, into = c("factor", "value"), sep =": ")
+
+art_new
+
+art_new <- art_new[!grepl("Q0", art_new$factor),]
+
+# create new data frame for each of the six factors
+trustworthy <- art_new %>% filter(factor == "Trustworthy") %>% select(id, clip, stimulus, trustworthy = value)
+wealthy <- art_new %>% filter(factor == "Wealthy") %>% select(id, clip, wealthy = value)
+kind <- art_new %>% filter(factor == "Kind") %>% select(id, clip, kind = value)
+intelligent <- art_new %>% filter(factor == "Intelligent") %>% select(id, clip, intelligent = value)
+honest <- art_new %>% filter(factor == "Honest") %>% select(id, clip, honest = value)
+educated <- art_new %>% filter(factor == "Educated") %>% select(id, clip, educated = value)
+humorous <- art_new %>% filter(factor == "Humorous") %>% select(id, clip, humorous = value)
+confident <- art_new %>% filter(factor == "Confident") %>% select(id, clip, confident = value)
+
+# merge the data frames together
+art <- merge(trustworthy, merge(wealthy, merge(kind, merge(intelligent, merge(honest, merge(educated, merge(humorous, confident, by = c("id", "clip")), by = c("id", "clip")), by = c("id", "clip")), by = c("id", "clip")), by = c("id", "clip")), by = c("id", "clip")), by = c("id", "clip"))
+write.csv(art, "/Users/ireneyi/Downloads/FINAL_reformatted_data_chinese_accents.csv", row.names=FALSE)
+
+#####
+
+### FILTERING OUT ATTENTION CHECKS ###
+
+# take out only rows that are attention checks
+attn <- subset(art, clip == "attention_check_disagree" | clip == "attention_check_agree" | clip == "attention_check_neutral")
+
+# add new empty column called "attention check"
+attn$attention <- NA
+
+# loop through to see if they answered all six options correctly
+for (i in 1:nrow(attn)) {
+  if (attn$clip[i] == "attention_check_disagree") {
+    if (attn$trustworthy[i] == 0 && attn$wealthy[i] == 0 && attn$kind[i] == 0 && attn$intelligent[i] == 0 && attn$honest[i] == 0 && attn$educated[i] == 0 && attn$humorous[i] == 0 && attn$confident[i] == 0) {
+      attn$attention[i] <- "pass"
+    } else {
+      attn$attention[i] <- "fail"
+    }
+  } else if (attn$clip[i] == "attention_check_agree") {
+    if (attn$trustworthy[i] == 6 && attn$wealthy[i] == 6 && attn$kind[i] == 6 && attn$intelligent[i] == 6 && attn$honest[i] == 6 && attn$educated[i] == 6 && attn$humorous[i] == 6 && attn$confident[i] == 6) {
+      attn$attention[i] <- "pass"
+    } else {
+      attn$attention[i] <- "fail"
+    }
+  } else if (attn$clip[i] == "attention_check_neutral") {
+    if (attn$trustworthy[i] == 3 && attn$wealthy[i] == 3 && attn$kind[i] == 3 && attn$intelligent[i] == 3 && attn$honest[i] == 3 && attn$educated[i] == 3 && attn$humorous[i] == 3 && attn$confident[i] == 3) {
+      attn$attention[i] <- "pass"
+    } else {
+      attn$attention[i] <- "fail"
+    }
+  } else {
+    attn$attention[i] <- NA
+  }
+}
+    
+
+# manually inspect the "fail" rows
+## if a participant answers four or fewer questions correctly, they are considered to have failed the trial
+## if a participant fails two or more attention check trials, they are considered to have failed the attention checks
+### in this case, their data will be excluded
+
+# after inspection, exclude data from:
+## 100, 114, 125, 177, 197, 24, 255, 256, 268, 277, 280, 307, 324, 350, 359, 36, 360, 366, 45, 58, 64, 66, 73, 85, 87, 88, 93
+## ones that got added: 324, 350, 359, 360, 366
+
+# exclude the data from participants who failed attention checks
+exclude_ids <- c("100", "114", "125", "177", "197", "24", "255", "256", "268", "277", "280", "307", "36", "45", "58", "64", "66", "73", "85", "87", "88", "93", "324", "350", "359", "360", "366")
+
+
+art_new <- art[!(art$id %in% exclude_ids), ]
+
+# 27 failed attention checks
+# 74 - 27 = 47
+# 47 usable ones
+
+# remove attention check rows from new data frame
+art_new <- subset(art_new, clip != "attention_check_agree")
+art_new <- subset(art_new, clip != "attention_check_disagree")
+art_new <- subset(art_new, clip != "attention_check_neutral")
+
+art_new
+
+#write to csv
+write.csv(art_new, "/Users/ireneyi/Downloads/FINAL_reformatted_data_chinese_accents_filtered_for_attention_checks.csv", row.names=FALSE)
+
+```
+
+```{r}
+data_root = c("/Users/ireneyi/Downloads/")
+
+data = read.csv(file.path(data_root, "FINAL_reformatted_data_chinese_accents_filtered_for_attention_checks.csv"))
+
+data
+```
+
+```{r}
+beijing <-data[which(data$clip %in% c("beijing_clip1", "beijing_clip2", "beijing_clip3", "beijing_clip4", "beijing_clip5")),]
+
+standard  <-data[which(data$clip %in% c("standard_clip1", "standard_clip2", "standard_clip3", "standard_clip4", "standard_clip5")),]
+
+taiwan <-data[which(data$clip %in% c("taiwan_clip1", "taiwan_clip2", "taiwan_clip3", "taiwan_clip4", "taiwan_clip5")),]
+
+singapore <-data[which(data$clip %in% c("singapore_clip1", "singapore_clip2", "singapore_clip3", "singapore_clip4", "singapore_clip5")),]
+
+beijing$accent <- 'beijing'
+
+standard$accent <- 'standard'
+
+taiwan$accent <- 'taiwan'
+
+singapore$accent <- 'singapore'
+  
+
+total <- rbind(beijing, standard, taiwan, singapore)
+
+total
+```
+
+
+```{r}
+# means with error bars:
+
+df_beijing <- beijing %>% 
+  summarize(Mean = mean(intelligent), CILow=ci.low(intelligent), CIHigh = ci.high(intelligent))
+
+df_beijing$accent <- 'beijing'
+
+df_standard <- standard %>% 
+  summarize(Mean = mean(intelligent), CILow=ci.low(intelligent), CIHigh = ci.high(intelligent))
+
+df_standard$accent <- 'standard'
+
+df_taiwan <- taiwan %>% 
+  summarize(Mean = mean(intelligent), CILow=ci.low(intelligent), CIHigh = ci.high(intelligent))
+
+df_taiwan$accent <- 'taiwan'
+
+df_singapore <- singapore %>% 
+  summarize(Mean = mean(intelligent), CILow=ci.low(intelligent), CIHigh = ci.high(intelligent))
+
+df_singapore$accent <- 'singapore'
+
+mean_intelligent <- rbind(df_beijing, df_standard, df_taiwan, df_singapore)
+
+ggplot(mean_intelligent, aes(x=accent,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=Mean-CILow,ymax=Mean+CIHigh),width=.1) + ylim(3,4) +
+  ylab("Average Likert Rating") + xlab("Accent") +
+  scale_color_manual(values=cbPalette) + ggtitle("Intelligent Ratings Across Accents")
+```
+```{r}
+## status and solidarity traits
+
+d_ss
+
+beijing_ss <-d_ss[which(d_ss$clip %in% c("beijing_clip1", "beijing_clip2", "beijing_clip3", "beijing_clip4", "beijing_clip5")),]
+
+standard_ss  <-d_ss[which(d_ss$clip %in% c("standard_clip1", "standard_clip2", "standard_clip3", "standard_clip4", "standard_clip5")),]
+
+taiwan_ss <-d_ss[which(d_ss$clip %in% c("taiwan_clip1", "taiwan_clip2", "taiwan_clip3", "taiwan_clip4", "taiwan_clip5")),]
+
+singapore_ss <-d_ss[which(d_ss$clip %in% c("singapore_clip1", "singapore_clip2", "singapore_clip3", "singapore_clip4", "singapore_clip5")),]
+  
+
+df_taiwan_ss <- taiwan_ss %>% 
+  summarize(Mean = mean(status), CILow=ci.low(status), CIHigh = ci.high(status))
+
+df_taiwan_ss$accent <- 'taiwan'
+
+df_singapore_ss <- singapore_ss %>% 
+  summarize(Mean = mean(status), CILow=ci.low(status), CIHigh = ci.high(status))
+
+df_singapore_ss$accent <- 'singapore'
+
+df_beijing_ss <- beijing_ss %>% 
+  summarize(Mean = mean(status), CILow=ci.low(status), CIHigh = ci.high(status))
+
+df_beijing_ss$accent <- 'beijing'
+
+df_standard_ss <- standard_ss %>% 
+  summarize(Mean = mean(status), CILow=ci.low(status), CIHigh = ci.high(status))
+
+df_standard_ss$accent <- 'standard'
+
+total_status <- rbind(df_beijing_ss, df_standard_ss, df_taiwan_ss, df_singapore_ss)
+
+ggplot(total_solidarity, aes(x=accent,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=Mean-CILow,ymax=Mean+CIHigh),width=.1) + ylim(3,4) +
+  ylab("Average Likert Rating") + xlab("Accent") +
+  scale_color_manual(values=cbPalette) + ggtitle("Averaged Status Ratings Across Accents")
+
+```
+```{r}
+## solidarity
+
+df_taiwan_ss <- taiwan_ss %>% 
+  summarize(Mean = mean(solidarity), CILow=ci.low(solidarity), CIHigh = ci.high(solidarity))
+
+df_taiwan_ss$accent <- 'taiwan'
+
+df_singapore_ss <- singapore_ss %>% 
+  summarize(Mean = mean(solidarity), CILow=ci.low(solidarity), CIHigh = ci.high(solidarity))
+
+df_singapore_ss$accent <- 'singapore'
+
+df_beijing_ss <- beijing_ss %>% 
+  summarize(Mean = mean(solidarity), CILow=ci.low(solidarity), CIHigh = ci.high(solidarity))
+
+df_beijing_ss$accent <- 'beijing'
+
+df_standard_ss <- standard_ss %>% 
+  summarize(Mean = mean(solidarity), CILow=ci.low(solidarity), CIHigh = ci.high(solidarity))
+
+df_standard_ss$accent <- 'standard'
+
+total_solidarity <- rbind(df_beijing_ss, df_standard_ss, df_taiwan_ss, df_singapore_ss)
+
+ggplot(total_solidarity, aes(x=accent,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=Mean-CILow,ymax=Mean+CIHigh),width=.1) + ylim(3,4) +
+  ylab("Average Likert Rating") + xlab("Accent") +
+  scale_color_manual(values=cbPalette) + ggtitle("Averaged Solidarity Ratings Across Accents")
+```
+
+
+```{r}
+####
+####
+
+df_beijing<- beijing %>% 
+  summarize(Mean = mean(trustworthy), CILow=ci.low(trustworthy), CIHigh = ci.high(trustworthy))
+
+df_beijing$accent <- 'beijing'
+
+df_standard <- standard %>% 
+  summarize(Mean = mean(trustworthy), CILow=ci.low(trustworthy), CIHigh = ci.high(trustworthy))
+
+df_standard$accent <- 'standard'
+
+df_taiwan <- taiwan %>% 
+  summarize(Mean = mean(trustworthy), CILow=ci.low(trustworthy), CIHigh = ci.high(trustworthy))
+
+df_taiwan$accent <- 'taiwan'
+
+df_singapore <- singapore %>% 
+  summarize(Mean = mean(trustworthy), CILow=ci.low(trustworthy), CIHigh = ci.high(trustworthy))
+
+df_singapore$accent <- 'singapore'
+
+mean_trustworthy <- rbind(df_beijing, df_standard, df_taiwan, df_singapore)
+
+ggplot(mean_trustworthy, aes(x=accent,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=Mean-CILow,ymax=Mean+CIHigh),width=.1) + ylim(3,4) +
+  ylab("Average Likert Rating") + xlab("Accent") +
+  scale_color_manual(values=cbPalette) + ggtitle("Trustworthy Ratings Across Accents")
+
+
+#write to csv
+write.csv(total, "/Users/ireneyi/Downloads/critical_accents.csv", row.names=FALSE)
+
+agr = total %>% 
+  select(wealthy,accent) %>% 
+  mutate(One = case_when(wealthy == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(wealthy == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(wealthy == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(wealthy == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(wealthy == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(wealthy == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(wealthy == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+library(tidyverse)
+library(devtools)
+
+agr_part = agr %>% 
+  group_by(accent,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+agr_part
+
+```
+
+
+```{r}
+
+# - visualizations: the overlaid histograms probably won't work well because there are too many accent conditions, but you could also plot means with error bars, with the 4 accent conditions on x-axis. that would make it easiest to see patterns.
+
+ggplot(agr_part, aes(x=Rating,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1)) + ggtitle("Wealthy")
+
+
+```
+```{r}
+agr_honest = total %>% 
+  select(educated,accent) %>% 
+  mutate(One = case_when(educated == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(educated == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(educated == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(educated == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(educated == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(educated == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(educated == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+agr_part_1 = agr_honest %>% 
+  group_by(accent,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+agr_part_1
+```
+
+
+```{r}
+ggplot(agr_part_1, aes(x=Rating,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1)) + ggtitle("educated")
+
+```
+```{r}
+agr_kind = total %>% 
+  select(trustworthy,accent) %>% 
+  mutate(One = case_when(trustworthy == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(trustworthy == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(trustworthy == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(trustworthy == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(trustworthy == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(trustworthy == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(trustworthy == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+agr_part = agr_kind %>% 
+  group_by(accent,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+agr_part
+```
+
+
+```{r}
+ggplot(agr_part, aes(x=Rating,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1)) + ggtitle("trustworthy")
+```
+
+```{r}
+beijing <-data[which(data$clip %in% c("beijing_clip1", "beijing_clip2", "beijing_clip3", "beijing_clip4", "beijing_clip5")),]
+
+standard  <-data[which(data$clip %in% c("standard_clip1", "standard_clip2", "standard_clip3", "standard_clip4", "standard_clip5")),]
+
+taiwan <-data[which(data$clip %in% c("taiwan_clip1", "taiwan_clip2", "taiwan_clip3", "taiwan_clip4", "taiwan_clip5")),]
+
+singapore <-data[which(data$clip %in% c("singapore_clip1", "singapore_clip2", "singapore_clip3", "singapore_clip4", "singapore_clip5")),]
+
+tianjin <-data[which(data$clip %in% c("tianjin_clip1", "tianjin_clip2", "tianjin_clip3", "tianjin_clip4", "tianjin_clip5")),]
+
+dongbei  <-data[which(data$clip %in% c("dongbei_clip1", "dongbei_clip2", "dongbei_clip3", "dongbei_clip4", "dongbei_clip5")),]
+
+sichuan <-data[which(data$clip %in% c("sichuan_clip1", "sichuan_clip2", "sichuan_clip3", "sichuan_clip4", "sichuan_clip5")),]
+
+guangdong <-data[which(data$clip %in% c("guangdong_clip1", "guangdong_clip2", "guangdong_clip3", "guangdong_clip4", "guangdong_clip5")),]
+
+tianjin$accent <- 'tianjin'
+
+dongbei$accent <- 'dongbei'
+
+sichuan$accent <- 'sichuan'
+
+guangdong$accent <- 'guangdong'
+
+total_fillers <- rbind(tianjin, dongbei, sichuan, guangdong)
+
+total_fillers
+
+```
+```{r}
+agr = total_fillers %>% 
+  select(honest,accent) %>% 
+  mutate(One = case_when(honest == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(honest == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(honest == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(honest == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(honest == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(honest == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(honest == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+agr_part = agr %>% 
+  group_by(accent,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+agr_part
+```
+
+
+```{r}
+ggplot(agr_part, aes(x=Rating,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1)) + ggtitle("honest")
+
+```
+
+
+
+```{r}
+d_items = total %>% 
+  group_by(clip,accent) %>% 
+  summarize(Mean=mean(trustworthy))
+
+d_items 
+
+ggplot(d_items, aes(x=Mean,fill=accent)) +
+  geom_histogram(bins=50, alpha=.5,position="identity") +
+  scale_fill_manual(values=cbPalette) +
+  scale_x_continuous(name="Mean by-item rating",breaks=seq(1,7,by=1)) + xlim(1, 7) + ggtitle("trustworthy")
+```
+
+```{r}
+total_compare <- rbind(tianjin, beijing)
+
+agr = total_compare %>% 
+  select(trustworthy,accent) %>% 
+  mutate(One = case_when(trustworthy == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(trustworthy == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(trustworthy == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(trustworthy == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(trustworthy == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(trustworthy == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(trustworthy == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+agr_part = agr %>% 
+  group_by(accent,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+ggplot(agr_part, aes(x=Rating,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1)) + ggtitle("trustworthy")
+```
+
+
+
+```{r}
+total_compare <- rbind(tianjin, beijing)
+
+agr = total_compare %>% 
+  select(honest,accent) %>% 
+  mutate(One = case_when(honest == 1 ~ 1,
+                       TRUE ~ 0),
+         Two = case_when(honest == 2 ~ 1,
+                         TRUE ~ 0),
+         Three = case_when(honest == 3 ~ 1,
+                           TRUE ~ 0),
+         Four = case_when(honest == 4 ~ 1,
+                          TRUE ~ 0),
+         Five = case_when(honest == 5 ~ 1,
+                          TRUE ~ 0),
+         Six = case_when(honest == 6 ~ 1,
+                         TRUE ~ 0),
+         Seven = case_when(honest == 7 ~ 1,
+                           TRUE ~ 0)) %>% 
+  pivot_longer(cols = One:Seven, names_to=c("Response"), values_to=c("Value"))
+
+agr_part = agr %>% 
+  group_by(accent,Response) %>% 
+  summarize(Mean = mean(Value), CILow=ci.low(Value), CIHigh = ci.high(Value)) %>% 
+  ungroup() %>% 
+  mutate(YMin=Mean-CILow,YMax=Mean+CIHigh) %>% 
+  mutate(Rating = as.numeric(as.character(fct_recode(Response, "1"="One", "2"="Two","3"="Three","4"="Four","5"="Five","6"="Six","7"="Seven"))))
+
+dodge=position_dodge(.9)
+
+ggplot(agr_part, aes(x=Rating,y=Mean,color=accent)) +
+  geom_point() +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.1) +
+  ylab("Response proportion") +
+  scale_color_manual(values=cbPalette) +
+  scale_x_continuous(breaks=seq(1,7,by=1)) + ggtitle("honest")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
